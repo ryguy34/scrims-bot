@@ -1,0 +1,26 @@
+{
+  "name": "scrims-bot",
+  "version": "1.0.0",
+  "description": "Bot to facilitate scrims",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "nodemon src/main.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ryguy34/scrims-bot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ryguy34/scrims-bot/issues"
+  },
+  "homepage": "https://github.com/ryguy34/scrims-bot#readme",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^14.7.1",
+    "dotenv": "^16.0.3",
+    "nodemon": "^2.0.20",
+    "pretty": "^2.0.0"
+  }
+}
