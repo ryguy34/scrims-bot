@@ -20,13 +20,22 @@ const client = new Client({
 	],
 });
 
+const gameModeMapsList = [
+	{ hardpoint: ["Invasion", "Karachi", "Skidrow", "Sub Base", "Terminal"] },
+	{ snd: ["Highrise", "Invasion", "Karachi", "Terminal", "Skidrow"] },
+	{ control: ["Highrise", "Invasion", "Karachi"] },
+];
+
 var state = {
 	team1: [],
 	team2: [],
-	gameType: "",
+	gameType: [],
 	teamSize: 0,
 	maps: 0,
+	chosenModeMap: [],
 };
+
+const selectedOptions = {};
 
 client.once("ready", async () => {
 	console.log("Bot is ready");
@@ -78,26 +87,37 @@ client.on("interactionCreate", async (interaction) => {
 						.setValue("3"),
 					new StringSelectMenuOptionBuilder()
 						.setLabel("5")
-						.setDescription("BNest of 5")
+						.setDescription("Best of 5")
 						.setValue("5")
 				);
 
 			const gameMode = new StringSelectMenuBuilder()
 				.setCustomId("game-mode")
 				.setPlaceholder("Game Mode")
+				.setMinValues(1)
+				.setMaxValues(3)
 				.addOptions(
 					new StringSelectMenuOptionBuilder()
-						.setLabel("Respawn")
-						.setDescription("Control & Hardpoint")
-						.setValue("Respawn"),
+						.setLabel("Hardpoint")
+						.setValue("hardpoint"),
 					new StringSelectMenuOptionBuilder()
-						.setLabel("No Respawn")
-						.setDescription("SnD")
-						.setValue("No Respawn"),
+						.setLabel("Search and Destroy")
+						.setValue("snd"),
 					new StringSelectMenuOptionBuilder()
-						.setLabel("Both")
-						.setDescription("SnD, Control, & Hardpoint")
-						.setValue("Both")
+						.setLabel("Control")
+						.setValue("control")
+				);
+
+			const assembleTeams = new StringSelectMenuBuilder()
+				.setCustomId("assemble-teams")
+				.setPlaceholder("Teams")
+				.addOptions(
+					new StringSelectMenuOptionBuilder()
+						.setLabel("Captains")
+						.setValue("captains"),
+					new StringSelectMenuOptionBuilder()
+						.setLabel("Random")
+						.setValue("random")
 				);
 
 			const numberOfPlayersRow = new ActionRowBuilder().addComponents(
@@ -110,43 +130,52 @@ client.on("interactionCreate", async (interaction) => {
 
 			const gameModeRow = new ActionRowBuilder().addComponents(gameMode);
 
+			const assembleTeamsRow = new ActionRowBuilder().addComponents(
+				assembleTeams
+			);
+
 			const response = await interaction.reply({
-				components: [numberOfPlayersRow, numberOfMapsRow, gameModeRow],
+				components: [
+					numberOfPlayersRow,
+					numberOfMapsRow,
+					gameModeRow,
+					assembleTeamsRow,
+				],
 			});
 
 			const collector = response.createMessageComponentCollector({
 				componentType: ComponentType.StringSelect,
-				time: 3_600_000,
+				time: 60000,
 			});
 
-			collector.on("collect", async (i) => {
-				if (i.customId === "players-per-team") {
-					state.teamSize = Number(i.values[0]);
-					await i.reply({
-						ephemeral: true,
-						content: `Number of players: ${state.teamSize}!`,
-					});
-				} else if (i.customId === "number-of-maps") {
-					state.maps = Number(i.values[0]);
-					await i.reply({
-						ephemeral: true,
-						content: `Number of maps: ${state.maps}!`,
-					});
-				} else {
-					state.gameType = i.values[0];
-					await i.reply({
-						ephemeral: true,
-						content: `Game mode: ${state.gameType}!`,
-					});
+			collector.on("collect", (interaction) => {
+				const customId = interaction.customId;
+				const selectedValues = interaction.values;
+
+				// Process the selected values based on the custom ID
+				selectedOptions[customId] = selectedValues;
+				interaction.deferUpdate();
+
+				// Check if all menus have received selections
+				if (Object.keys(selectedOptions).length === 4) {
+					// If all menus have selections, end the collector
+					collector.stop();
 				}
+			});
+
+			collector.on("end", () => {
+				// Process the collected options later or as part of a larger interaction
+				// For example, you might want to update a database or perform additional actions
+				console.log("Collected Options:", selectedOptions);
 			});
 		} else if (commandName === "done") {
 			console.log("Resetting state");
 			state.team1 = [];
 			state.team2 = [];
-			gameType = "";
-			teamSize = 0;
+			state.gameType = "";
+			state.teamSize = 0;
 			state.maps = 0;
+			state.chosenModeMap = [];
 		}
 	} else {
 		await interaction.reply(
