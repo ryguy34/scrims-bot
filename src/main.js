@@ -168,6 +168,7 @@ client.on("interactionCreate", async (interaction) => {
 				// For example, you might want to update a database or perform additional actions
 				console.log("Collected Options:", selectedOptions);
 			});
+		} else if (commandName === "start") {
 		} else if (commandName === "done") {
 			console.log("Resetting state");
 			state.team1 = [];
