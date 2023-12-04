@@ -50,97 +50,8 @@ client.on("interactionCreate", async (interaction) => {
 		if (commandName === "scrim") {
 			console.log("SCRIM");
 
-			// TODO: extract this to another file
-			const numberOfPlayers = new StringSelectMenuBuilder()
-				.setCustomId("players-per-team")
-				.setPlaceholder("Team Size")
-				.addOptions(
-					new StringSelectMenuOptionBuilder()
-						.setLabel("2v2")
-						.setDescription("2 versus 2")
-						.setValue("2"),
-					new StringSelectMenuOptionBuilder()
-						.setLabel("3v3")
-						.setDescription("3 versus 3")
-						.setValue("3"),
-					new StringSelectMenuOptionBuilder()
-						.setLabel("4v4")
-						.setDescription("4 versus 4")
-						.setValue("4"),
-					new StringSelectMenuOptionBuilder()
-						.setLabel("5v5")
-						.setDescription("5 versus 5")
-						.setValue("5")
-				);
-
-			const numberOfMaps = new StringSelectMenuBuilder()
-				.setCustomId("number-of-maps")
-				.setPlaceholder("Number of Maps")
-				.addOptions(
-					new StringSelectMenuOptionBuilder()
-						.setLabel("1")
-						.setDescription("Best of 1")
-						.setValue("1"),
-					new StringSelectMenuOptionBuilder()
-						.setLabel("3")
-						.setDescription("Best of 3")
-						.setValue("3"),
-					new StringSelectMenuOptionBuilder()
-						.setLabel("5")
-						.setDescription("Best of 5")
-						.setValue("5")
-				);
-
-			const gameMode = new StringSelectMenuBuilder()
-				.setCustomId("game-mode")
-				.setPlaceholder("Game Mode")
-				.setMinValues(1)
-				.setMaxValues(3)
-				.addOptions(
-					new StringSelectMenuOptionBuilder()
-						.setLabel("Hardpoint")
-						.setValue("hardpoint"),
-					new StringSelectMenuOptionBuilder()
-						.setLabel("Search and Destroy")
-						.setValue("snd"),
-					new StringSelectMenuOptionBuilder()
-						.setLabel("Control")
-						.setValue("control")
-				);
-
-			const assembleTeams = new StringSelectMenuBuilder()
-				.setCustomId("assemble-teams")
-				.setPlaceholder("Teams")
-				.addOptions(
-					new StringSelectMenuOptionBuilder()
-						.setLabel("Captains")
-						.setValue("captains"),
-					new StringSelectMenuOptionBuilder()
-						.setLabel("Random")
-						.setValue("random")
-				);
-
-			const numberOfPlayersRow = new ActionRowBuilder().addComponents(
-				numberOfPlayers
-			);
-
-			const numberOfMapsRow = new ActionRowBuilder().addComponents(
-				numberOfMaps
-			);
-
-			const gameModeRow = new ActionRowBuilder().addComponents(gameMode);
-
-			const assembleTeamsRow = new ActionRowBuilder().addComponents(
-				assembleTeams
-			);
-
 			const response = await interaction.reply({
-				components: [
-					numberOfPlayersRow,
-					numberOfMapsRow,
-					gameModeRow,
-					assembleTeamsRow,
-				],
+				components: buildMenuComponent(),
 			});
 
 			const collector = response.createMessageComponentCollector({
@@ -165,11 +76,12 @@ client.on("interactionCreate", async (interaction) => {
 
 			collector.on("end", () => {
 				// Process the collected options later or as part of a larger interaction
-				// For example, you might want to update a database or perform additional actions
 				console.log("Collected Options:", selectedOptions);
 			});
 		} else if (commandName === "start") {
+			//TODO: move each team to respective chat
 		} else if (commandName === "done") {
+			//TODO: reset state and return players to draft chat
 			console.log("Resetting state");
 			state.team1 = [];
 			state.team2 = [];
@@ -184,5 +96,88 @@ client.on("interactionCreate", async (interaction) => {
 		);
 	}
 });
+
+function buildMenuComponent() {
+	const numberOfPlayers = new StringSelectMenuBuilder()
+		.setCustomId("players-per-team")
+		.setPlaceholder("Team Size")
+		.addOptions(
+			new StringSelectMenuOptionBuilder()
+				.setLabel("2v2")
+				.setDescription("2 versus 2")
+				.setValue("2"),
+			new StringSelectMenuOptionBuilder()
+				.setLabel("3v3")
+				.setDescription("3 versus 3")
+				.setValue("3"),
+			new StringSelectMenuOptionBuilder()
+				.setLabel("4v4")
+				.setDescription("4 versus 4")
+				.setValue("4"),
+			new StringSelectMenuOptionBuilder()
+				.setLabel("5v5")
+				.setDescription("5 versus 5")
+				.setValue("5")
+		);
+
+	const numberOfMaps = new StringSelectMenuBuilder()
+		.setCustomId("number-of-maps")
+		.setPlaceholder("Number of Maps")
+		.addOptions(
+			new StringSelectMenuOptionBuilder()
+				.setLabel("1")
+				.setDescription("Best of 1")
+				.setValue("1"),
+			new StringSelectMenuOptionBuilder()
+				.setLabel("3")
+				.setDescription("Best of 3")
+				.setValue("3"),
+			new StringSelectMenuOptionBuilder()
+				.setLabel("5")
+				.setDescription("Best of 5")
+				.setValue("5")
+		);
+
+	const gameMode = new StringSelectMenuBuilder()
+		.setCustomId("game-mode")
+		.setPlaceholder("Game Mode")
+		.setMinValues(1)
+		.setMaxValues(3)
+		.addOptions(
+			new StringSelectMenuOptionBuilder()
+				.setLabel("Hardpoint")
+				.setValue("hardpoint"),
+			new StringSelectMenuOptionBuilder()
+				.setLabel("Search and Destroy")
+				.setValue("snd"),
+			new StringSelectMenuOptionBuilder()
+				.setLabel("Control")
+				.setValue("control")
+		);
+
+	const assembleTeams = new StringSelectMenuBuilder()
+		.setCustomId("assemble-teams")
+		.setPlaceholder("Teams")
+		.addOptions(
+			new StringSelectMenuOptionBuilder()
+				.setLabel("Captains")
+				.setValue("captains"),
+			new StringSelectMenuOptionBuilder()
+				.setLabel("Random")
+				.setValue("random")
+		);
+
+	const numberOfPlayersRow = new ActionRowBuilder().addComponents(
+		numberOfPlayers
+	);
+
+	const numberOfMapsRow = new ActionRowBuilder().addComponents(numberOfMaps);
+
+	const gameModeRow = new ActionRowBuilder().addComponents(gameMode);
+
+	const assembleTeamsRow = new ActionRowBuilder().addComponents(assembleTeams);
+
+	return [numberOfPlayersRow, numberOfMapsRow, gameModeRow, assembleTeamsRow];
+}
 
 client.login(process.env.BOT_TOKEN);
