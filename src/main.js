@@ -157,7 +157,7 @@ function buildMenuComponent() {
 
 	const assembleTeams = new StringSelectMenuBuilder()
 		.setCustomId("assemble-teams")
-		.setPlaceholder("Teams")
+		.setPlaceholder("Draft Type")
 		.addOptions(
 			new StringSelectMenuOptionBuilder()
 				.setLabel("Captains")
