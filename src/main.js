@@ -21,9 +21,9 @@ const client = new Client({
 });
 
 const gameModeMapsList = [
-	{ hardpoint: ["Invasion", "Karachi", "Skidrow", "Sub Base", "Terminal"] },
-	{ snd: ["Highrise", "Invasion", "Karachi", "Terminal", "Skidrow"] },
-	{ control: ["Highrise", "Invasion", "Karachi"] },
+	{ Hardpoint: ["Invasion", "Karachi", "Skidrow", "Sub Base", "Terminal"] },
+	{ SnD: ["Highrise", "Invasion", "Karachi", "Terminal", "Skidrow"] },
+	{ Control: ["Highrise", "Invasion", "Karachi"] },
 ];
 
 var state = {
@@ -35,7 +35,7 @@ var state = {
 	chosenModeMap: [],
 };
 
-const selectedOptions = {};
+var selectedOptions = {};
 
 client.once("ready", async () => {
 	console.log("Bot is ready");
@@ -51,6 +51,7 @@ client.on("interactionCreate", async (interaction) => {
 			console.log("SCRIM");
 
 			const response = await interaction.reply({
+				content: "Match Settings",
 				components: buildMenuComponent(),
 			});
 
@@ -77,6 +78,22 @@ client.on("interactionCreate", async (interaction) => {
 			collector.on("end", () => {
 				// Process the collected options later or as part of a larger interaction
 				console.log("Collected Options:", selectedOptions);
+				const mapSize = selectedOptions["number-of-maps"][0];
+
+				for (let i = 0; i < mapSize; i++) {
+					const chosenModeIndex = getRandomElement(
+						selectedOptions["game-mode"]
+					);
+
+					const chosenMode = Object.keys(
+						gameModeMapsList[chosenModeIndex]
+					)[0];
+
+					const chosenMap = getRandomElement(
+						Object.values(gameModeMapsList[chosenModeIndex])[0]
+					);
+					console.log(`Index: ${i} Mode: ${chosenMode} Map: ${chosenMap}`);
+				}
 			});
 		} else if (commandName === "start") {
 			//TODO: move each team to respective chat
@@ -96,6 +113,10 @@ client.on("interactionCreate", async (interaction) => {
 		);
 	}
 });
+
+function getRandomElement(arr) {
+	return arr[Math.floor(Math.random() * arr.length)];
+}
 
 function buildMenuComponent() {
 	const numberOfPlayers = new StringSelectMenuBuilder()
@@ -146,13 +167,11 @@ function buildMenuComponent() {
 		.addOptions(
 			new StringSelectMenuOptionBuilder()
 				.setLabel("Hardpoint")
-				.setValue("hardpoint"),
+				.setValue("0"),
 			new StringSelectMenuOptionBuilder()
 				.setLabel("Search and Destroy")
-				.setValue("snd"),
-			new StringSelectMenuOptionBuilder()
-				.setLabel("Control")
-				.setValue("control")
+				.setValue("1"),
+			new StringSelectMenuOptionBuilder().setLabel("Control").setValue("2")
 		);
 
 	const assembleTeams = new StringSelectMenuBuilder()
