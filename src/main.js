@@ -80,7 +80,7 @@ client.on("interactionCreate", async (interaction) => {
 				console.log("Collected Options:", selectedOptions);
 				const mapSize = selectedOptions["number-of-maps"][0];
 
-				for (let i = 0; i < mapSize; i++) {
+				while (state.chosenModeMap.length != mapSize) {
 					const chosenModeIndex = getRandomElement(
 						selectedOptions["game-mode"]
 					);
@@ -92,8 +92,22 @@ client.on("interactionCreate", async (interaction) => {
 					const chosenMap = getRandomElement(
 						Object.values(gameModeMapsList[chosenModeIndex])[0]
 					);
-					console.log(`Index: ${i} Mode: ${chosenMode} Map: ${chosenMap}`);
+
+					const mapModeObj = {
+						mode: chosenMode,
+						map: chosenMap,
+					};
+
+					const isInArray = state.chosenModeMap.some(
+						(item) => JSON.stringify(item) === JSON.stringify(mapModeObj)
+					);
+
+					if (!isInArray) {
+						state.chosenModeMap.push(mapModeObj);
+					}
 				}
+
+				console.log(state.chosenModeMap);
 			});
 		} else if (commandName === "start") {
 			//TODO: move each team to respective chat
@@ -106,6 +120,7 @@ client.on("interactionCreate", async (interaction) => {
 			state.teamSize = 0;
 			state.maps = 0;
 			state.chosenModeMap = [];
+			selectedOptions = {};
 		}
 	} else {
 		await interaction.reply(
