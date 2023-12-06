@@ -5,6 +5,9 @@ const { Routes } = require("discord-api-types/v9");
 
 const commands = [
 	new SlashCommandBuilder().setName("scrim").setDescription("Starts scrims"),
+	new SlashCommandBuilder()
+		.setName("start")
+		.setDescription("Move to team channel"),
 	new SlashCommandBuilder().setName("done").setDescription("Ends scrims"),
 ].map((command) => command.toJSON());
 
