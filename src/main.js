@@ -29,10 +29,10 @@ const gameModeMapsList = [
 var state = {
 	team1: [],
 	team2: [],
-	gameType: [],
+	undraftedPlayers: [],
 	teamSize: 0,
-	maps: 0,
 	chosenModeMap: [],
+	draftType: "",
 };
 
 var selectedOptions = {};
@@ -79,6 +79,8 @@ client.on("interactionCreate", async (interaction) => {
 				// Process the collected options later or as part of a larger interaction
 				console.log("Collected Options:", selectedOptions);
 				const mapSize = selectedOptions["number-of-maps"][0];
+				state.teamSize = selectedOptions["players-per-team"][0];
+				state.draftType = selectedOptions["assemble-teams"][0];
 
 				while (state.chosenModeMap.length != mapSize) {
 					const chosenModeIndex = getRandomElement(
@@ -107,18 +109,46 @@ client.on("interactionCreate", async (interaction) => {
 					}
 				}
 
-				console.log(state.chosenModeMap);
+				console.log(state);
+				const channel = interaction.channel;
+				const draftChannel = interaction.guild.channels.cache.get(
+					process.env.DRAFT_CHANNEL_ID
+				);
+				channel.send("Replace with embed");
+
+				if (state.draftType === "random") {
+					draftChannel.members.forEach((member) => {
+						state.undraftedPlayers.push(member);
+						//console.log(`Username: ${member.user.username}`);
+					});
+					console.log(state.undraftedPlayers);
+					assignRandomTeams();
+				}
 			});
 		} else if (commandName === "start") {
-			//TODO: move each team to respective chat
+			for (let i = 0; i < state.team1.length; i++) {
+				const member1 = state.team1[i];
+				if (member1 && member1.voice.channel) {
+					// Move the member to the target voice channel
+					await member1.voice.setChannel(process.env.TEAM_1_CHANNEL_ID);
+					console.log(`Moved ${member1.user.tag} to team 1 channel`);
+				}
+
+				const member2 = state.team2[i];
+				if (member2 && member2.voice.channel) {
+					// Move the member to the target voice channel
+					await member2.voice.setChannel(process.env.TEAM_1_CHANNEL_ID);
+					console.log(`Moved ${member2.user.tag} to team 2 channel`);
+				}
+			}
 		} else if (commandName === "done") {
 			//TODO: reset state and return players to draft chat
+			// I think some of these should be []
 			console.log("Resetting state");
 			state.team1 = [];
 			state.team2 = [];
-			state.gameType = "";
+			state.undraftedPlayers = [];
 			state.teamSize = 0;
-			state.maps = 0;
 			state.chosenModeMap = [];
 			selectedOptions = {};
 		}
@@ -128,6 +158,25 @@ client.on("interactionCreate", async (interaction) => {
 		);
 	}
 });
+
+function assignRandomTeams() {
+	const size = parseInt(state.teamSize, 10);
+	for (let i = 0; i < 1; i++) {
+		const member1 = getAndRemoveRandomElement(state.undraftedPlayers);
+		state.team1.push(member1);
+		const member2 = getAndRemoveRandomElement(state.undraftedPlayers);
+		state.team2.push(member2);
+	}
+}
+
+function getAndRemoveRandomElement(arr) {
+	const randomIndex = Math.floor(Math.random() * arr.length);
+	const ele = arr[randomIndex];
+	console.log(ele);
+
+	state.undraftedPlayers = arr.filter((item) => item !== ele);
+	return ele;
+}
 
 function getRandomElement(arr) {
 	return arr[Math.floor(Math.random() * arr.length)];
