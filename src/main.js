@@ -108,12 +108,18 @@ client.on("interactionCreate", async (interaction) => {
 						state.chosenModeMap.push(mapModeObj);
 					}
 				}
-
-				console.log(state);
 				const channel = interaction.channel;
 				const draftChannel = interaction.guild.channels.cache.get(
 					process.env.DRAFT_CHANNEL_ID
 				);
+
+				if (draftChannel.members.values.length === 0) {
+					interaction.followUp(
+						"There needs to people in the draft voice channel. Please start over"
+					);
+					resetState();
+					return;
+				}
 				channel.send("Replace with embed");
 
 				if (state.draftType === "random") {
@@ -121,8 +127,10 @@ client.on("interactionCreate", async (interaction) => {
 						state.undraftedPlayers.push(member);
 						//console.log(`Username: ${member.user.username}`);
 					});
-					console.log(state.undraftedPlayers);
 					assignRandomTeams();
+					// TODO: send embed for teams and map and mode
+				} else {
+					// TODO: do captains flow
 				}
 			});
 		} else if (commandName === "start") {
@@ -137,20 +145,14 @@ client.on("interactionCreate", async (interaction) => {
 				const member2 = state.team2[i];
 				if (member2 && member2.voice.channel) {
 					// Move the member to the target voice channel
-					await member2.voice.setChannel(process.env.TEAM_1_CHANNEL_ID);
+					await member2.voice.setChannel(process.env.TEAM_2_CHANNEL_ID);
 					console.log(`Moved ${member2.user.tag} to team 2 channel`);
 				}
 			}
 		} else if (commandName === "done") {
-			//TODO: reset state and return players to draft chat
 			// I think some of these should be []
-			console.log("Resetting state");
-			state.team1 = [];
-			state.team2 = [];
-			state.undraftedPlayers = [];
-			state.teamSize = 0;
-			state.chosenModeMap = [];
-			selectedOptions = {};
+			// TODO: move everyone from team1 and team2 to draft channel again
+			resetState();
 		}
 	} else {
 		await interaction.reply(
@@ -159,8 +161,19 @@ client.on("interactionCreate", async (interaction) => {
 	}
 });
 
+function resetState() {
+	console.log("Resetting state");
+	state.team1 = [];
+	state.team2 = [];
+	state.undraftedPlayers = [];
+	state.teamSize = 0;
+	state.chosenModeMap = [];
+	selectedOptions = {};
+}
+
 function assignRandomTeams() {
 	const size = parseInt(state.teamSize, 10);
+	// TODO: add size instead of 1
 	for (let i = 0; i < 1; i++) {
 		const member1 = getAndRemoveRandomElement(state.undraftedPlayers);
 		state.team1.push(member1);
